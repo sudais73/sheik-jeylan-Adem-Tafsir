@@ -1,42 +1,19 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-export default function Index() {
+export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tafsiira Jeylan</Text>
+    <View className="flex-1 items-center justify-center bg-green-50 px-6">
+      <Text className="text-3xl font-bold text-green-800">
+        Tafsiira Jeylan
+      </Text>
 
-      <Text style={styles.subtitle}>
+      <Text className="mt-2 text-center text-lg text-gray-600">
         Tafsiira Qur'aanaa Afaan Oromoo
       </Text>
 
-      <Text style={styles.description}>
+      <Text className="mt-2 text-base text-gray-500">
         Sheikh Jeylan Adam
       </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
-
-  title: {
-    fontSize: 32,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-
-  subtitle: {
-    fontSize: 18,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-
-  description: {
-    fontSize: 16,
-  },
-});
