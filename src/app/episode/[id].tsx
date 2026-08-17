@@ -1,26 +1,8 @@
+import { AudioPlayer } from "@/features/audio/AudioPlayer";
 import { surahs } from "@/features/tafsiira/data";
-import {
-    useAudioPlayer,
-    useAudioPlayerStatus,
-} from "expo-audio";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-const TEST_AUDIO =
-    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
-
-function formatTime(seconds: number) {
-    if (!Number.isFinite(seconds) || seconds < 0) {
-        return "00:00";
-    }
-
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-
-    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
-        .toString()
-        .padStart(2, "0")}`;
-}
 export default function EpisodeScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -28,8 +10,6 @@ export default function EpisodeScreen() {
         .flatMap((surah) => surah.episodes)
         .find((item) => item.id === id);
 
-    const player = useAudioPlayer(TEST_AUDIO);
-    const status = useAudioPlayerStatus(player);
     if (!episode) {
         return (
             <View className="flex-1 items-center justify-center bg-white px-6">
@@ -39,13 +19,7 @@ export default function EpisodeScreen() {
             </View>
         );
     }
-    function handlePlayPause() {
-        if (status.playing) {
-            player.pause();
-        } else {
-            player.play();
-        }
-    }
+
 
     return (
         <>
@@ -74,42 +48,9 @@ export default function EpisodeScreen() {
                     {episode.duration}
                 </Text>
 
-                {/* Player */}
-                <View className="mt-12 w-full">
-                    {/* Progress bar */}
-                    <View className="h-2 overflow-hidden rounded-full bg-gray-200">
-                        <View
-                            className="h-full rounded-full bg-green-700"
-                            style={{
-                                width:
-                                    status.duration > 0
-                                        ? `${(status.currentTime / status.duration) * 100}%`
-                                        : "0%",
-                            }}
-                        />
-                    </View>
-
-                    {/* Time */}
-                    <View className="mt-2 flex-row justify-between">
-                        <Text className="text-xs text-gray-500">
-                            {formatTime(status.currentTime)}
-                        </Text>
-
-                        <Text className="text-xs text-gray-500">
-                            {formatTime(status.duration)}
-                        </Text>
-                    </View>
-
-                    {/* Play/Pause */}
-                    <Pressable
-                        onPress={handlePlayPause}
-                        className="mt-6 h-16 items-center justify-center rounded-full bg-green-700 active:bg-green-800"
-                    >
-                        <Text className="text-lg font-semibold text-white">
-                            {status.playing ? "⏸ Pause" : "▶ Play"}
-                        </Text>
-                    </Pressable>
-                </View>
+                <AudioPlayer
+                    audioUrl="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+                />
             </View>
         </>
     );
