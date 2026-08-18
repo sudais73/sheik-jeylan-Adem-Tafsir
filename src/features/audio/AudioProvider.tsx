@@ -1,12 +1,13 @@
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { createContext, useContext, useState, type ReactNode } from 'react';
+import type { AudioItem } from "./types";
 
 type AudioContextValue = {
-player:ReturnType<typeof useAudioPlayer>;
-status:ReturnType<typeof useAudioPlayerStatus>;
-currentAudioUrl:string | null;
-playAudio:(audioUrl:string)=>void;
-stopAudio :()=>void
+    player: ReturnType<typeof useAudioPlayer>;
+    status: ReturnType<typeof useAudioPlayerStatus>;
+    currentAudio: AudioItem | null;
+    playAudio: (audio: AudioItem) => void;
+    stopAudio: () => void
 }
 
 type AudioProviderProps = {
@@ -20,31 +21,40 @@ export function AudioProvider({
     children
 }: AudioProviderProps) {
 
-    const[currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null)
+    const [currentAudio, setCurrentAudio] =
+        useState<AudioItem | null>(null);
+
     const player = useAudioPlayer(null)
     const status = useAudioPlayerStatus(player)
-    function playAudio(audioUrl:string){
-        if(currentAudioUrl !== audioUrl){
-            player.replace(audioUrl)
-        setCurrentAudioUrl(audioUrl)
+function playAudio(audio: AudioItem) {
+  console.log("PLAY AUDIO:", audio);
 
-        
-        }
-        player.play()
-    }
+  if (!audio.audioUrl) {
+    console.error("❌ Audio URL is missing:", audio);
+    return;
+  }
 
-    function stopAudio (){
+  if (currentAudio?.id !== audio.id) {
+    player.replace(audio.audioUrl);
+    setCurrentAudio(audio);
+  }
+
+  player.play();
+}
+
+    function stopAudio() {
         player.pause();
-        setCurrentAudioUrl(null)
+        setCurrentAudio(null);
     }
     return (
-        <AudioContext.Provider value={{
-            player,
-            status,
-            currentAudioUrl,
-            playAudio,
-            stopAudio
-        }}>
+        <AudioContext.Provider
+            value={{
+                player,
+                status,
+                currentAudio,
+                playAudio,
+                stopAudio,
+            }}>
             {children}
         </AudioContext.Provider>
     )

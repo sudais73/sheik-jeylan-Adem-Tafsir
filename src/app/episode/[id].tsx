@@ -2,7 +2,8 @@ import { AudioPlayer } from "@/features/audio/AudioPlayer";
 import { surahs } from "@/features/tafsiira/data";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { Text, View } from "react-native";
-
+const TEST_AUDIO_URL =
+  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
 export default function EpisodeScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -49,7 +50,12 @@ export default function EpisodeScreen() {
                 </Text>
 
                 <AudioPlayer
-                    audioUrl="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+                    audio={{
+                        id: episode.id,
+                        title: episode.title,
+                        subtitle: `Episode ${episode.episode}`,
+                        audioUrl: episode.audioUrl ?? TEST_AUDIO_URL
+                    }}
                 />
             </View>
         </>

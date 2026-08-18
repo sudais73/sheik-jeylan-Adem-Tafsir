@@ -1,8 +1,8 @@
 import { Pressable, Text, View } from "react-native";
 import { useAudio } from "./AudioProvider";
-
+import type { AudioItem } from "./types";
 type AudioPlayerProps = {
-  audioUrl: string;
+  audio: AudioItem;
 };
 
 function formatTime(seconds: number) {
@@ -18,21 +18,21 @@ function formatTime(seconds: number) {
     .padStart(2, "0")}`;
 }
 
-export function AudioPlayer({ audioUrl }: AudioPlayerProps) {
- const {playAudio,player, status, currentAudioUrl} = useAudio()
-
-  function handlePlayPause() {
-    if(currentAudioUrl !== audioUrl){
-      playAudio(audioUrl);
-      return;
-    }
-    if(status.playing){
-      player.pause();
-
-    }else{
-      player.play();
-    }
+export function AudioPlayer({ audio }: AudioPlayerProps) {
+ const {playAudio,player, status, currentAudio} = useAudio()
+const isCurrentAudio = currentAudio?.id === audio.id;
+ function handlePlayPause() {
+  if (!isCurrentAudio) {
+    playAudio(audio);
+    return;
   }
+
+  if (status.playing) {
+    player.pause();
+  } else {
+    player.play();
+  }
+}
 
   function handleBackward() {
     player.seekTo(
@@ -93,7 +93,7 @@ export function AudioPlayer({ audioUrl }: AudioPlayerProps) {
           className="h-16 w-16 items-center justify-center rounded-full bg-green-700 active:bg-green-800"
         >
           <Text className="text-xl text-white">
-            {status.playing ? "⏸" : "▶"}
+           {isCurrentAudio && status.playing ? "⏸" : "▶"}
           </Text>
         </Pressable>
 
