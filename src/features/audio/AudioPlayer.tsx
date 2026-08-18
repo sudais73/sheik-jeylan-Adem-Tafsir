@@ -1,5 +1,5 @@
-import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { Pressable, Text, View } from "react-native";
+import { useAudio } from "./AudioProvider";
 
 type AudioPlayerProps = {
   audioUrl: string;
@@ -19,13 +19,17 @@ function formatTime(seconds: number) {
 }
 
 export function AudioPlayer({ audioUrl }: AudioPlayerProps) {
-  const player = useAudioPlayer(audioUrl);
-  const status = useAudioPlayerStatus(player);
+ const {playAudio,player, status, currentAudioUrl} = useAudio()
 
   function handlePlayPause() {
-    if (status.playing) {
+    if(currentAudioUrl !== audioUrl){
+      playAudio(audioUrl);
+      return;
+    }
+    if(status.playing){
       player.pause();
-    } else {
+
+    }else{
       player.play();
     }
   }
