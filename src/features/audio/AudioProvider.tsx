@@ -18,47 +18,56 @@ const AudioContext = createContext<AudioContextValue | null>(null)
 
 
 export function AudioProvider({
-    children
+  children,
 }: AudioProviderProps) {
+  const [currentAudio, setCurrentAudio] =
+    useState<AudioItem | null>(null);
 
-    const [currentAudio, setCurrentAudio] =
-        useState<AudioItem | null>(null);
+  const player = useAudioPlayer(null);
 
-    const player = useAudioPlayer(null)
-    const status = useAudioPlayerStatus(player)
-function playAudio(audio: AudioItem) {
-  console.log("PLAY AUDIO:", audio);
+  const status = useAudioPlayerStatus(player);
 
-  if (!audio.audioUrl) {
-    console.error("❌ Audio URL is missing:", audio);
-    return;
-  }
+  console.log("AUDIO STATUS:", {
+    playing: status.playing,
+    currentTime: status.currentTime,
+    duration: status.duration,
+    currentAudio: currentAudio?.id,
+  });
 
-  if (currentAudio?.id !== audio.id) {
-    player.replace(audio.audioUrl);
-    setCurrentAudio(audio);
-  }
+  function playAudio(audio: AudioItem) {
+    console.log("PLAY AUDIO:", audio);
 
-  player.play();
-}
-
-    function stopAudio() {
-        player.pause();
-        setCurrentAudio(null);
+    if (!audio.audioUrl) {
+      console.error("❌ Audio URL is missing:", audio);
+      return;
     }
-    return (
-        <AudioContext.Provider
-            value={{
-                player,
-                status,
-                currentAudio,
-                playAudio,
-                stopAudio,
-            }}>
-            {children}
-        </AudioContext.Provider>
-    )
 
+    if (currentAudio?.id !== audio.id) {
+      player.replace(audio.audioUrl);
+      setCurrentAudio(audio);
+    }
+
+    player.play();
+  }
+
+  function stopAudio() {
+    player.pause();
+    setCurrentAudio(null);
+  }
+
+  return (
+    <AudioContext.Provider
+      value={{
+        player,
+        status,
+        currentAudio,
+        playAudio,
+        stopAudio,
+      }}
+    >
+      {children}
+    </AudioContext.Provider>
+  );
 }
 
 export function useAudio() {
