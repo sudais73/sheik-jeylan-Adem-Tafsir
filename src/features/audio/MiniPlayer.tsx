@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAudio } from "./AudioProvider";
 
 export function MiniPlayer() {
-  const { player, status, currentAudio } = useAudio();
+  const { player, status, currentAudio, pauseAudio } = useAudio();
 
   if (!currentAudio) {
     return null;
@@ -20,12 +20,13 @@ export function MiniPlayer() {
   }
 
   function handlePlayPause() {
-    if (status.playing) {
-      player.pause();
-    } else {
-      player.play();
-    }
+     if (status.playing) {
+  pauseAudio();
+} else {
+  player.play();
+}
   }
+
 
   return (
     <SafeAreaView
