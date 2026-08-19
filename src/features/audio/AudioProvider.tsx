@@ -27,7 +27,7 @@ type AudioContextValue = {
   currentAudio: AudioItem | null;
   autoNextAudio: AudioItem | null;
   playAudio: (audio: AudioItem) => void;
-   pauseAudio: () => void;
+  pauseAudio: () => void;
   stopAudio: () => void;
 };
 
@@ -56,86 +56,86 @@ export function AudioProvider({
   const player = useAudioPlayer(null);
 
   const status = useAudioPlayerStatus(player);
-useEffect(() => {
-  async function configureAudio() {
-    await setAudioModeAsync({
-      playsInSilentMode: true,
-      shouldPlayInBackground: true,
-      interruptionMode: "doNotMix",
-    });
-  }
+  useEffect(() => {
+    async function configureAudio() {
+      await setAudioModeAsync({
+        playsInSilentMode: true,
+        shouldPlayInBackground: true,
+        interruptionMode: "doNotMix",
+      });
+    }
 
-  configureAudio();
-}, []);
+    configureAudio();
+  }, []);
   // --------------------------------
   // 1. Load saved playback
   // --------------------------------
-useEffect(() => {
-  async function restorePlayback() {
-    const saved = await loadPlaybackPosition();
+  useEffect(() => {
+    async function restorePlayback() {
+      const saved = await loadPlaybackPosition();
 
-    if (!saved) {
-      console.log("💾 No saved playback found.");
-      setHasRestoredPlayback(true);
-      return;
-    }
-
-    console.log(
-      "💾 SAVED PLAYBACK FOUND:",
-      saved
-    );
-
-    const episode = surahs
-      .flatMap((surah) => surah.episodes)
-      .find(
-        (episode) =>
-          episode.id === saved.episodeId
-      );
-
-    if (!episode) {
-      console.log(
-        "⚠️ Saved episode no longer exists:",
-        saved.episodeId
-      );
-
-      setHasRestoredPlayback(true);
-      return;
-    }
-
-    const audio: AudioItem = {
-      id: episode.id,
-      title: episode.title,
-      subtitle: `Episode ${episode.episode}`,
-      audioUrl:
-        episode.audioUrl ??
-        TEST_AUDIO_URL,
-    };
-
-    console.log(
-      "🔄 RESTORING AUDIO:",
-      audio.id,
-      saved.position
-    );
-
-    player.replace(audio.audioUrl);
-
-    setCurrentAudio(audio);
-
-    // Wait until the audio source is loaded
-    setTimeout(() => {
-      player.seekTo(saved.position);
+      if (!saved) {
+        console.log("💾 No saved playback found.");
+        setHasRestoredPlayback(true);
+        return;
+      }
 
       console.log(
-        "⏩ RESTORED POSITION:",
+        "💾 SAVED PLAYBACK FOUND:",
+        saved
+      );
+
+      const episode = surahs
+        .flatMap((surah) => surah.episodes)
+        .find(
+          (episode) =>
+            episode.id === saved.episodeId
+        );
+
+      if (!episode) {
+        console.log(
+          "⚠️ Saved episode no longer exists:",
+          saved.episodeId
+        );
+
+        setHasRestoredPlayback(true);
+        return;
+      }
+
+      const audio: AudioItem = {
+        id: episode.id,
+        title: episode.title,
+        subtitle: `Episode ${episode.episode}`,
+        audioUrl:
+          episode.audioUrl ??
+          TEST_AUDIO_URL,
+      };
+
+      console.log(
+        "🔄 RESTORING AUDIO:",
+        audio.id,
         saved.position
       );
-    }, 500);
 
-    setHasRestoredPlayback(true);
-  }
+      player.replace(audio.audioUrl);
 
-  restorePlayback();
-}, []);
+      setCurrentAudio(audio);
+
+      // Wait until the audio source is loaded
+      setTimeout(() => {
+        player.seekTo(saved.position);
+
+        console.log(
+          "⏩ RESTORED POSITION:",
+          saved.position
+        );
+      }, 500);
+
+      setHasRestoredPlayback(true);
+    }
+
+    restorePlayback();
+  }, []);
 
   // --------------------------------
   // 2. Save playback position
@@ -172,29 +172,29 @@ useEffect(() => {
     currentAudio,
     status.currentTime,
   ]);
-async function saveCurrentPosition() {
-  if (!currentAudio) {
-    return;
+  async function saveCurrentPosition() {
+    if (!currentAudio) {
+      return;
+    }
+
+    if (
+      !Number.isFinite(status.currentTime) ||
+      status.currentTime <= 0
+    ) {
+      return;
+    }
+
+    await savePlaybackPosition({
+      episodeId: currentAudio.id,
+      position: status.currentTime,
+    });
+
+    console.log(
+      "💾 SAVED:",
+      currentAudio.id,
+      status.currentTime
+    );
   }
-
-  if (
-    !Number.isFinite(status.currentTime) ||
-    status.currentTime <= 0
-  ) {
-    return;
-  }
-
-  await savePlaybackPosition({
-    episodeId: currentAudio.id,
-    position: status.currentTime,
-  });
-
-  console.log(
-    "💾 SAVED:",
-    currentAudio.id,
-    status.currentTime
-  );
-}
   // --------------------------------
   // 3. Detect audio completion
   // --------------------------------
@@ -248,7 +248,18 @@ async function saveCurrentPosition() {
     setCurrentAudio(nextAudio);
 
     setAutoNextAudio(nextAudio);
-
+player.setActiveForLockScreen(
+  true,
+  {
+    title: nextAudio.title,
+    artist: "Sheikh Jeylan Adam",
+    albumTitle: "Tafsiira Jeylan",
+  },
+  {
+    showSeekBackward: true,
+    showSeekForward: true,
+  }
+);
     player.play();
   }, [
     status.currentTime,
@@ -260,7 +271,6 @@ async function saveCurrentPosition() {
   // 4. Play an episode
   // --------------------------------
   function playAudio(audio: AudioItem) {
-    console.log("PLAY AUDIO:", audio);
 
     if (!audio.audioUrl) {
       console.error(
@@ -278,22 +288,33 @@ async function saveCurrentPosition() {
 
       setCurrentAudio(audio);
     }
-
+    player.setActiveForLockScreen(
+  true,
+  {
+    title: audio.title,
+    artist: "Sheikh Jeylan Adam",
+    albumTitle: "Tafsiira Jeylan",
+  },
+  {
+    showSeekBackward: true,
+    showSeekForward: true,
+  }
+);
     player.play();
   }
-async function pauseAudio() {
-  await saveCurrentPosition();
+  async function pauseAudio() {
+    await saveCurrentPosition();
 
-  player.pause();
-}
+    player.pause();
+  }
   // --------------------------------
   // 5. Stop audio
   // --------------------------------
   function stopAudio() {
-    player.pause();
-
-    setCurrentAudio(null);
-  }
+  player.pause();
+  player.setActiveForLockScreen(false);
+  setCurrentAudio(null);
+}
 
   return (
     <AudioContext.Provider
@@ -303,7 +324,7 @@ async function pauseAudio() {
         currentAudio,
         autoNextAudio,
         playAudio,
-          pauseAudio,
+        pauseAudio,
         stopAudio,
       }}
     >
