@@ -26,10 +26,12 @@ function formatTime(seconds: number) {
 }
 
 export function AudioPlayer({ audio }: AudioPlayerProps) {
-  const { playAudio, player, status, currentAudio } = useAudio()
+    const { playAudio, pauseAudio, player,status,currentAudio} = useAudio();
+    
   const [progressWidth, setProgressWidth] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
   const isCurrentAudio = currentAudio?.id === audio.id;
+
   function handlePlayPause() {
     if (!isCurrentAudio) {
       playAudio(audio);
