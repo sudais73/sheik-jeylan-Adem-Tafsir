@@ -1,11 +1,11 @@
 import { AudioPlayer } from "@/features/audio/AudioPlayer";
 import { useAudio } from "@/features/audio/AudioProvider";
+import { DownloadButton } from "@/features/audio/DownloadButton";
 import { surahs } from "@/features/tafsiira/data";
 import { getNextEpisode } from "@/features/tafsiira/utils";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useEffect } from "react";
 import { Text, View } from "react-native";
-
 const TEST_AUDIO_URL =
     "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
 export default function EpisodeScreen() {
@@ -83,6 +83,13 @@ export default function EpisodeScreen() {
                             subtitle: `Episode ${episode.episode}`,
                             audioUrl: episode.audioUrl ?? TEST_AUDIO_URL,
                         }}
+                    />
+                    <DownloadButton
+                        episodeId={episode.id}
+                        audioUrl={
+                            episode.audioUrl ??
+                            TEST_AUDIO_URL
+                        }
                     />
                 </View>
             </View>
