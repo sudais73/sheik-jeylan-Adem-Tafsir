@@ -12,15 +12,13 @@ import {
 
 import { getNextEpisode } from "../tafsiira/utils";
 
+import { setAudioModeAsync } from "expo-audio";
+import { surahs } from "../tafsiira/data";
 import {
   loadPlaybackPosition,
   savePlaybackPosition,
 } from "./audio-storage";
-
-import { surahs } from "../tafsiira/data";
 import type { AudioItem } from "./types";
-
-import { setAudioModeAsync } from "expo-audio";
 type AudioContextValue = {
   player: ReturnType<typeof useAudioPlayer>;
   status: ReturnType<typeof useAudioPlayerStatus>;
