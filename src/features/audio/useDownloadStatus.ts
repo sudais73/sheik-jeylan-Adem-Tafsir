@@ -1,22 +1,43 @@
-import { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+
 import { isEpisodeDownloaded } from "./download-service";
 
 export function useDownloadStatus(episodeId: string) {
   const [downloaded, setDownloaded] = useState(false);
   const [checking, setChecking] = useState(true);
 
-  async function checkStatus() {
+  const checkStatus = useCallback(async () => {
     setChecking(true);
 
-    const exists = await isEpisodeDownloaded(episodeId);
+    try {
+      const exists =
+        await isEpisodeDownloaded(episodeId);
 
-    setDownloaded(exists);
-    setChecking(false);
-  }
+      setDownloaded(exists);
+    } catch (error) {
+      console.error(
+        "❌ DOWNLOAD STATUS CHECK FAILED:",
+        error
+      );
 
+      setDownloaded(false);
+    } finally {
+      setChecking(false);
+    }
+  }, [episodeId]);
+
+  // Initial check
   useEffect(() => {
     checkStatus();
-  }, [episodeId]);
+  }, [checkStatus]);
+
+  // Check again whenever the screen becomes active
+  useFocusEffect(
+    useCallback(() => {
+      checkStatus();
+    }, [checkStatus])
+  );
 
   return {
     downloaded,

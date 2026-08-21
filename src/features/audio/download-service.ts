@@ -1,4 +1,5 @@
 import { Directory, File, Paths } from "expo-file-system";
+import { registerDownload, removeDownload } from "./download-manager";
 
 const DOWNLOAD_DIRECTORY = new Directory(
   Paths.document,
@@ -13,7 +14,8 @@ export function ensureAudioDirectory() {
 
 export async function downloadEpisode(
   episodeId: string,
-  audioUrl: string
+  audioUrl: string,
+  onProgress?: (progress: number) => void
 ) {
   ensureAudioDirectory();
 
@@ -22,29 +24,83 @@ export async function downloadEpisode(
     `${episodeId}.mp3`
   );
 
-  // Already downloaded
   if (destination.exists) {
-    console.log("📦 ALREADY DOWNLOADED:", episodeId);
+    console.log(
+      "📦 ALREADY DOWNLOADED:",
+      episodeId
+    );
+
+    onProgress?.(1);
+
     return destination.uri;
   }
 
-  console.log("⬇️ DOWNLOADING:", episodeId);
-
-  const downloadedFile = await File.downloadFileAsync(
-    audioUrl,
-    destination
-  );
-
   console.log(
-    "✅ DOWNLOAD COMPLETE:",
-    downloadedFile.uri
-    
+    "⬇️ DOWNLOADING:",
+    episodeId
   );
+const task = File.createDownloadTask(
+  audioUrl,
+  destination,
+  {
+    onProgress: ({
+      bytesWritten,
+      totalBytes,
+    }) => {
+      if (totalBytes <= 0) {
+        return;
+      }
 
-  return downloadedFile.uri;
+      const progress =
+        bytesWritten / totalBytes;
+
+      onProgress?.(progress);
+    },
+  }
+);
+
+registerDownload(
+  episodeId,
+  task
+);
+
+  try {
+    const downloadedFile =
+      await task.downloadAsync();
+
+    if (!downloadedFile) {
+      throw new Error(
+        "Download did not complete."
+      );
+    }
+
+    onProgress?.(1);
+    removeDownload(episodeId);
+
+if (destination.exists) {
+  destination.delete();
 }
 
+    console.log(
+      "✅ DOWNLOAD COMPLETE:",
+      downloadedFile.uri
+    );
 
+    return downloadedFile.uri;
+  } catch (error) {
+    // Remove incomplete file
+    if (destination.exists) {
+      destination.delete();
+
+      console.log(
+        "🗑️ INCOMPLETE DOWNLOAD DELETED:",
+        episodeId
+      );
+    }
+
+    throw error;
+  }
+}
 export async function isEpisodeDownloaded(
   episodeId: string
 ) {

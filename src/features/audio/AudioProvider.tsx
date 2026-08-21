@@ -283,41 +283,76 @@ export function AudioProvider({
   // --------------------------------
   // 4. Play an episode
   // --------------------------------
-  function playAudio(audio: AudioItem) {
-    console.log("PLAY AUDIO:", audio);
+  // function playAudio(audio: AudioItem) {
+  //   console.log("PLAY AUDIO:", audio);
 
-    if (!audio.audioUrl) {
-      console.error(
-        "❌ Audio URL is missing:",
-        audio
-      );
+  //   if (!audio.audioUrl) {
+  //     console.error(
+  //       "❌ Audio URL is missing:",
+  //       audio
+  //     );
 
-      return;
-    }
+  //     return;
+  //   }
 
-    if (currentAudio?.id !== audio.id) {
-      const localUri =
-        getDownloadedAudioUri(audio.id);
+  //   if (currentAudio?.id !== audio.id) {
+  //     const localUri =
+  //       getDownloadedAudioUri(audio.id);
 
-      const source =
-        localUri ?? audio.audioUrl;
+  //     const source =
+  //       localUri ?? audio.audioUrl;
 
-      console.log(
-        localUri
-          ? "📱 PLAYING DOWNLOADED AUDIO:"
-          : "🌐 STREAMING ONLINE:",
-        source
-      );
+  //     console.log(
+  //       localUri
+  //         ? "📱 PLAYING DOWNLOADED AUDIO:"
+  //         : "🌐 STREAMING ONLINE:",
+  //       source
+  //     );
 
-      player.replace(source);
+  //     player.replace(source);
 
-      player.seekTo(0);
+  //     player.seekTo(0);
 
-      setCurrentAudio(audio);
-    }
+  //     setCurrentAudio(audio);
+  //   }
 
-    player.play();
+  //   player.play();
+  // }
+
+  async function playAudio(audio: AudioItem) {
+  console.log("▶️ PLAY REQUEST:", audio.id);
+
+  if (!audio.audioUrl) {
+    console.error(
+      "❌ Audio URL is missing:",
+      audio
+    );
+
+    return;
   }
+
+  const localUri =
+    getDownloadedAudioUri(audio.id);
+
+  const sourceUri =
+    localUri ?? audio.audioUrl;
+
+  console.log("🎵 AUDIO SOURCE:", {
+    episodeId: audio.id,
+    localUri,
+    sourceUri,
+  });
+
+  if (currentAudio?.id !== audio.id) {
+    player.replace(sourceUri);
+
+    player.seekTo(0);
+
+    setCurrentAudio(audio);
+  }
+
+  player.play();
+}
   async function pauseAudio() {
     await saveCurrentPosition();
 
