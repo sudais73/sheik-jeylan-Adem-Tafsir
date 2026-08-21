@@ -38,20 +38,12 @@ export async function downloadEpisode(
   console.log(
     "✅ DOWNLOAD COMPLETE:",
     downloadedFile.uri
+    
   );
 
   return downloadedFile.uri;
 }
-// export async function isEpisodeDownloaded(
-//   episodeId: string
-// ) {
-//   const file = new File(
-//     DOWNLOAD_DIRECTORY,
-//     `${episodeId}.mp3`
-//   );
 
-//   return file.exists;
-// }
 
 export async function isEpisodeDownloaded(
   episodeId: string
@@ -64,6 +56,7 @@ export async function isEpisodeDownloaded(
   console.log(
     "🔍 CHECK DOWNLOAD:",
     episodeId,
+    
     "→",
     file.uri,
     "→ exists:",
@@ -92,4 +85,76 @@ export function deleteAllDownloadedEpisodes() {
     DOWNLOAD_DIRECTORY.delete();
     console.log("🗑️ ALL AUDIO DOWNLOADS DELETED");
   }
+}
+
+export function getDownloadedAudioUri(
+  episodeId: string
+): string | null {
+ const file = new File(
+  DOWNLOAD_DIRECTORY,
+  `${episodeId}.mp3`
+);
+
+console.log("🔍 LOCAL FILE:", {
+  episodeId,
+  uri: file.uri,
+  exists: file.exists,
+  size: file.size,
+});
+
+  if (!file.exists) {
+    return null;
+  }
+
+  return file.uri;
+}
+
+export function debugDownloadedFile(episodeId: string) {
+  const file = new File(
+    DOWNLOAD_DIRECTORY,
+    `${episodeId}.mp3`
+  );
+
+  console.log("🔍 FILE DEBUG:", {
+    episodeId,
+    uri: file.uri,
+    exists: file.exists,
+    size: file.size,
+  });
+}
+
+export function getDownloadedEpisodesSize(
+  episodeIds: string[]
+) {
+  let totalSize = 0;
+
+  for (const episodeId of episodeIds) {
+    const file = new File(
+      DOWNLOAD_DIRECTORY,
+      `${episodeId}.mp3`
+    );
+
+    if (file.exists) {
+      totalSize += file.size;
+    }
+  }
+
+  return totalSize;
+}
+
+
+export function formatFileSize(bytes: number) {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  if (bytes < 1024 * 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }

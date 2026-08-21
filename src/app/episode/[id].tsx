@@ -1,5 +1,8 @@
 import { AudioPlayer } from "@/features/audio/AudioPlayer";
 import { useAudio } from "@/features/audio/AudioProvider";
+import {
+    debugDownloadedFile,
+} from "@/features/audio/download-service";
 import { DownloadButton } from "@/features/audio/DownloadButton";
 import { surahs } from "@/features/tafsiira/data";
 import { getNextEpisode } from "@/features/tafsiira/utils";
@@ -43,7 +46,10 @@ export default function EpisodeScreen() {
         getNextEpisode(episode.id)
     );
 
-
+    useEffect(() => {
+        debugDownloadedFile("baqarah-1");
+        debugDownloadedFile("baqarah-2");
+    }, []);
 
     return (
         <>
@@ -84,13 +90,29 @@ export default function EpisodeScreen() {
                             audioUrl: episode.audioUrl ?? TEST_AUDIO_URL,
                         }}
                     />
-                    <DownloadButton
-                        episodeId={episode.id}
-                        audioUrl={
-                            episode.audioUrl ??
-                            TEST_AUDIO_URL
-                        }
-                    />
+                    <View className="rounded-2xl bg-white p-4">
+                        <Text className="text-lg font-semibold">
+                            {episode.title}
+                        </Text>
+
+                        <Text className="mt-1 text-sm text-gray-500">
+                            Episode {episode.episode}
+                        </Text>
+
+                        <View className="mt-4 flex-row items-center justify-between">
+                            <Text className="text-sm text-gray-400">
+                                {episode.duration}
+                            </Text>
+
+                            <DownloadButton
+                                episodeId={episode.id}
+                                audioUrl={
+                                    episode.audioUrl ??
+                                    TEST_AUDIO_URL
+                                }
+                            />
+                        </View>
+                    </View>
                 </View>
             </View>
         </>

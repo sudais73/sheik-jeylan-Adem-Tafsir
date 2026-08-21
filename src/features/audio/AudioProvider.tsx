@@ -15,9 +15,9 @@ import { getNextEpisode } from "../tafsiira/utils";
 import { setAudioModeAsync } from "expo-audio";
 import { surahs } from "../tafsiira/data";
 import {
-  loadPlaybackPosition,
-  savePlaybackPosition,
+  loadPlaybackPosition, savePlaybackPosition,
 } from "./audio-storage";
+import { getDownloadedAudioUri, } from "./download-service";
 import type { AudioItem } from "./types";
 type AudioContextValue = {
   player: ReturnType<typeof useAudioPlayer>;
@@ -48,12 +48,13 @@ export function AudioProvider({
   const [autoNextAudio, setAutoNextAudio] =
     useState<AudioItem | null>(null);
 
-  const [hasRestoredPlayback, setHasRestoredPlayback] =
-    useState(false);
+  const [hasRestoredPlayback, setHasRestoredPlayback] =  useState(false);
 
   const player = useAudioPlayer(null);
 
   const status = useAudioPlayerStatus(player);
+
+
   useEffect(() => {
     async function configureAudio() {
       await setAudioModeAsync({
@@ -241,23 +242,37 @@ export function AudioProvider({
         TEST_AUDIO_URL,
     };
 
-    player.replace(nextAudio.audioUrl);
+    const localUri =
+      getDownloadedAudioUri(nextAudio.id);
+
+    const source =
+      localUri ?? nextAudio.audioUrl;
+
+    console.log(
+      localUri
+        ? "📱 AUTO-NEXT: PLAYING DOWNLOADED AUDIO:"
+        : "🌐 AUTO-NEXT: STREAMING ONLINE:",
+      nextAudio.id
+    );
+
+    player.replace(source);
 
     setCurrentAudio(nextAudio);
 
     setAutoNextAudio(nextAudio);
-player.setActiveForLockScreen(
-  true,
-  {
-    title: nextAudio.title,
-    artist: "Sheikh Jeylan Adam",
-    albumTitle: "Tafsiira Jeylan",
-  },
-  {
-    showSeekBackward: true,
-    showSeekForward: true,
-  }
-);
+
+    player.setActiveForLockScreen(
+      true,
+      {
+        title: nextAudio.title,
+        artist: "Sheikh Jeylan Adam",
+        albumTitle: "Tafsiira Jeylan",
+      },
+      {
+        showSeekBackward: true,
+        showSeekForward: true,
+      }
+    );
     player.play();
   }, [
     status.currentTime,
@@ -269,6 +284,7 @@ player.setActiveForLockScreen(
   // 4. Play an episode
   // --------------------------------
   function playAudio(audio: AudioItem) {
+    console.log("PLAY AUDIO:", audio);
 
     if (!audio.audioUrl) {
       console.error(
@@ -280,24 +296,26 @@ player.setActiveForLockScreen(
     }
 
     if (currentAudio?.id !== audio.id) {
-      player.replace(audio.audioUrl);
+      const localUri =
+        getDownloadedAudioUri(audio.id);
+
+      const source =
+        localUri ?? audio.audioUrl;
+
+      console.log(
+        localUri
+          ? "📱 PLAYING DOWNLOADED AUDIO:"
+          : "🌐 STREAMING ONLINE:",
+        source
+      );
+
+      player.replace(source);
 
       player.seekTo(0);
 
       setCurrentAudio(audio);
     }
-    player.setActiveForLockScreen(
-  true,
-  {
-    title: audio.title,
-    artist: "Sheikh Jeylan Adam",
-    albumTitle: "Tafsiira Jeylan",
-  },
-  {
-    showSeekBackward: true,
-    showSeekForward: true,
-  }
-);
+
     player.play();
   }
   async function pauseAudio() {
@@ -309,10 +327,10 @@ player.setActiveForLockScreen(
   // 5. Stop audio
   // --------------------------------
   function stopAudio() {
-  player.pause();
-  player.setActiveForLockScreen(false);
-  setCurrentAudio(null);
-}
+    player.pause();
+    player.setActiveForLockScreen(false);
+    setCurrentAudio(null);
+  }
 
   return (
     <AudioContext.Provider

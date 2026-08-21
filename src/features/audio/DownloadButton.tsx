@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import {
-    downloadEpisode,
-    isEpisodeDownloaded,
+  downloadEpisode,
 } from "./download-service";
+
+import { useDownloadStatus } from "./useDownloadStatus";
 
 type DownloadButtonProps = {
   episodeId: string;
@@ -15,86 +15,57 @@ export function DownloadButton({
   episodeId,
   audioUrl,
 }: DownloadButtonProps) {
-  const [downloaded, setDownloaded] = useState(false);
-  const [downloading, setDownloading] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function checkDownload() {
-      const exists =
-        await isEpisodeDownloaded(episodeId);
-
-      if (mounted) {
-        setDownloaded(exists);
-      }
-    }
-
-    checkDownload();
-
-    return () => {
-      mounted = false;
-    };
-  }, [episodeId]);
-  useEffect(() => {
-  async function checkDownload() {
-    const exists =
-      await isEpisodeDownloaded(episodeId);
-
-    console.log(
-      "🎯 BUTTON:",
-      episodeId,
-      "DOWNLOADED:",
-      exists
-    );
-
-    setDownloaded(exists);
-  }
-
-  checkDownload();
-}, [episodeId]);
+  const {
+    downloaded,
+    checking,
+    refresh,
+  } = useDownloadStatus(episodeId);
 
   async function handleDownload() {
-    if (downloaded || downloading) {
+    if (downloaded) {
       return;
     }
 
     try {
-      setDownloading(true);
-
       await downloadEpisode(
         episodeId,
         audioUrl
       );
 
-      setDownloaded(true);
-
-      console.log(
-        "✅ BUTTON DOWNLOAD:",
-        episodeId
-      );
+      await refresh();
     } catch (error) {
       console.error(
         "❌ DOWNLOAD FAILED:",
         error
       );
-    } finally {
-      setDownloading(false);
     }
+  }
+
+  if (checking) {
+    return (
+      <Text className="text-sm text-gray-400">
+        Checking...
+      </Text>
+    );
+  }
+
+  if (downloaded) {
+    return (
+      <View className="rounded-lg bg-green-100 px-4 py-2">
+        <Text className="font-semibold text-green-700">
+          ✓ Downloaded
+        </Text>
+      </View>
+    );
   }
 
   return (
     <Pressable
       onPress={handleDownload}
-      disabled={downloaded || downloading}
-      className="mt-6 w-full items-center rounded-xl bg-gray-100 px-5 py-4 active:bg-gray-200"
+      className="rounded-lg bg-green-700 px-4 py-2 active:bg-green-800"
     >
-      <Text className="font-semibold text-gray-800">
-        {downloading
-          ? "Downloading..."
-          : downloaded
-            ? "✓ Downloaded"
-            : "↓ Download"}
+      <Text className="font-semibold text-white">
+        Download
       </Text>
     </Pressable>
   );
