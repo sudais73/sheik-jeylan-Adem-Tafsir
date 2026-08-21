@@ -65,28 +65,40 @@ registerDownload(
 );
 
   try {
-    const downloadedFile =
-      await task.downloadAsync();
+try {
+  const downloadedFile =
+    await task.downloadAsync();
 
-    if (!downloadedFile) {
-      throw new Error(
-        "Download did not complete."
-      );
-    }
+  if (!downloadedFile) {
+    throw new Error(
+      "Download did not complete."
+    );
+  }
 
-    onProgress?.(1);
-    removeDownload(episodeId);
+  onProgress?.(1);
 
-if (destination.exists) {
-  destination.delete();
-}
+  removeDownload(episodeId);
+
+  console.log(
+    "✅ DOWNLOAD COMPLETE:",
+    downloadedFile.uri
+  );
+
+  return downloadedFile.uri;
+} catch (error) {
+  if (destination.exists) {
+    destination.delete();
 
     console.log(
-      "✅ DOWNLOAD COMPLETE:",
-      downloadedFile.uri
+      "🗑️ INCOMPLETE DOWNLOAD DELETED:",
+      episodeId
     );
+  }
 
-    return downloadedFile.uri;
+  removeDownload(episodeId);
+
+  throw error;
+}
   } catch (error) {
     // Remove incomplete file
     if (destination.exists) {
